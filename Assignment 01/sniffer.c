@@ -163,3 +163,93 @@ void dissect_ipv4(const u_char *packet)
 
         printf("  TTL: %d | Protocol: %d (Other) | Checksum: 0x%04X\n", ttl, protocol, checksum);
     }
+
+
+
+
+
+
+
+
+    //  MODULE 4 (Aref ur Rahman - L1F23BSSE0389): TCP/UDP Dissection (Task 5)
+// ========================================================================= 
+
+
+void dissect_tcp(const u_char *packet, int start)
+{
+    // Bytes 0-1: Source Port, Bytes 2-3: Destination Port
+    int src_port = (packet[start] << 8) | packet[start + 1];
+    int dst_port = (packet[start + 2] << 8) | packet[start + 3];
+
+    // Bytes 4-7: 32-bit Sequence Number
+
+    unsigned int seq = (packet[start + 4] << 24) | (packet[start + 5] << 16) | (packet[start + 6] << 8)  | packet[start + 7];
+
+    // Bytes 8-11: 32-bit Acknowledgement Number
+
+    unsigned int ack = (packet[start + 8] << 24) | (packet[start + 9] << 16) | (packet[start + 10] << 8) | packet[start + 11];
+
+    // Byte 12 (top 4 bits): TCP Header Length in words
+
+    int hdr_words = (packet[start + 12] >> 4) & 0x0F;
+
+    int hdr_bytes = hdr_words * 4;
+
+    // Byte 13: TCP Flags
+    int flags = packet[start + 13];
+
+    printf("  TCP Src Port: %d | Dst Port: %d | Seq: %u | Ack: %u\n", src_port, dst_port, seq, ack);
+    printf("  TCP Header Length: %d words (%d bytes) | Flags:", hdr_words, hdr_bytes);
+
+    if (flags & 0x20) printf(" URG");
+    if (flags & 0x10) printf(" ACK");
+    if (flags & 0x08) printf(" PSH");
+    if (flags & 0x04) printf(" RST");
+    if (flags & 0x02) printf(" SYN");
+    if (flags & 0x01) printf(" FIN");
+    printf("\n");
+
+
+    print_app_name(src_port);
+    print_app_name(dst_port);
+}
+
+void dissect_udp(const u_char *packet, int start)
+{
+    //  Bytes 0-1: Source Port, Bytes 2-3: Destination Port
+
+    int src_port = (packet[start] << 8) | packet[start + 1];
+    int dst_port = (packet[start + 2] << 8) | packet[start + 3];
+
+    //  Bytes 4-5: UDP Length, Bytes 6-7: UDP Checksum
+
+    int len = (packet[start + 4] << 8) | packet[start + 5];
+
+    int checksum = (packet[start + 6] << 8) | packet[start + 7];
+
+    printf("  UDP Src Port: %d | Dst Port: %d | Length: %d | Checksum: 0x%04X\n", src_port, dst_port, len, checksum);
+
+    // Check application protocol using ports
+
+    print_app_name(src_port);
+
+    print_app_name(dst_port);
+}
+
+
+void print_app_name(int port)
+{
+    if (port == 80) {
+        printf("  Application: HTTP (Web - Port 80)\n");
+    } else if (port == 25) {
+        printf("  Application: SMTP (Email - Port 25)\n");
+    } else if (port == 20 || port == 21) {
+        printf("  Application: FTP (File Transfer - Port %d)\n", port);
+    } else if (port == 53) {
+        printf("  Application: DNS (Port 53)\n");
+    } else if (port == 443) {
+        printf("  Application: HTTPS (Secure Web - Port 443)\n");
+    } else if (port == 22) {
+        printf("  Application: SSH (Secure Shell - Port 22)\n");
+    }
+}
