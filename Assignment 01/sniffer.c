@@ -108,7 +108,46 @@ int *counter = (int *)args;
     }
 }
 
-//  Ansir codes here
+//   MODULE 2 (Ansir Ali - L1F23BSSE0388): Ethernet Dissection (Task 3)
+//  ========================================================================= 
+int dissect_ethernet(const u_char *packet)
+{
+    // Bytes 0 to 5: Destination MAC 
+    printf("  Dst MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", packet[0], packet[1], packet[2], packet[3], packet[4], packet[5]);
+
+    // Bytes 6 to 11: Source MAC
+
+    printf("  Src MAC: %02X:%02X:%02X:%02X:%02X:%02X\n", packet[6], packet[7], packet[8], packet[9], packet[10], packet[11]);
+
+    // Bytes 12 and 13: 2-byte EtherType
+
+    int ether_type = (packet[12] << 8) | packet[13];
+
+    // Check EtherType and increment counters
+    if (ether_type == 0x0800) {
+
+        printf("  EtherType: 0x0800 (IPv4)\n");
+
+        ipv4_count++;
+
+    } else if (ether_type == 0x0806) {
+
+        printf("  EtherType: 0x0806 (ARP)\n");
+        arp_count++;
+
+    } else if (ether_type == 0x86DD) {
+
+        printf("  EtherType: 0x86DD (IPv6)\n");
+        ipv6_count++;
+
+    } else {
+        printf("  EtherType: 0x%04X (Other)\n", ether_type);
+
+        other_count++;
+    }
+
+    return ether_type;
+}
 
 
 //  MODULE 3 (Muhammad Hafeez - L1F23BSSE0396): IPv4 Dissection (Task 4)
