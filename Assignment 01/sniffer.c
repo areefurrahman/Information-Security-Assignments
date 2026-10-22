@@ -107,3 +107,59 @@ int *counter = (int *)args;
         dissect_ipv4(packet);
     }
 }
+
+//  Ansir codes here
+
+
+//  MODULE 3 (Muhammad Hafeez - L1F23BSSE0396): IPv4 Dissection (Task 4)
+// ========================================================================= 
+
+void dissect_ipv4(const u_char *packet)
+{
+    // IPv4 starts at byte 14 (right after 14-byte Ethernet header) 
+
+    int version = (packet[14] >> 4) & 0x0F; /* Top 4 bits of byte 14 */
+
+    int ihl = packet[14] & 0x0F;            /* Bottom 4 bits of byte 14 */
+    int ihl_bytes = ihl * 4;                /* Header length in bytes */
+
+   
+    int total_len = (packet[16] << 8) | packet[17];
+
+    //  Bytes 18-19: Identification 
+    int id = (packet[18] << 8) | packet[19];
+
+    // Bytes 20-21: Flags (3 bits) and Fragment Offset (13 bits)
+
+    int flags_frag = (packet[20] << 8) | packet[21];
+
+    int df = (flags_frag >> 14) & 0x01;       /* Don't Fragment flag */
+
+    int mf = (flags_frag >> 13) & 0x01;       /* More Fragments flag */
+
+    int frag_offset = flags_frag & 0x1FFF;    /* 13-bit Fragment Offset */
+
+    // Byte 22: Time to Live (TTL)
+    int ttl = packet[22];
+
+    // Byte 23: Protocol (6=TCP, 17=UDP)
+    int protocol = packet[23];
+
+    // Bytes 24-25: Header Checksum
+
+    int checksum = (packet[24] << 8) | packet[25];
+
+    printf("  IPv4 Version: %d | IHL: %d words (%d bytes) | Total Length: %d\n", version, ihl, ihl_bytes, total_len);
+    printf("  Identification: 0x%04X | DF: %d | MF: %d | Frag Offset: %d (%d bytes)\n", id, df, mf, frag_offset, frag_offset * 8);
+
+    if (protocol == 6) {
+        
+        printf("  TTL: %d | Protocol: 6 (TCP) | Checksum: 0x%04X\n", ttl, checksum);
+
+    } else if (protocol == 17) {
+
+        printf("  TTL: %d | Protocol: 17 (UDP) | Checksum: 0x%04X\n", ttl, checksum);
+    } else {
+
+        printf("  TTL: %d | Protocol: %d (Other) | Checksum: 0x%04X\n", ttl, protocol, checksum);
+    }
